@@ -1,0 +1,1 @@
+# CQRS + Transactional Outbox + CDC com Spring Boot 4 e Java 21
