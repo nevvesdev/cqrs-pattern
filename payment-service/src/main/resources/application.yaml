@@ -19,6 +19,12 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+
+kafka:
+  topico:
+    pagamento-eventos: pagamento.eventos
 
 springdoc:
   swagger-ui:
