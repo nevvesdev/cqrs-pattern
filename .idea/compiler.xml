@@ -6,13 +6,21 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="order-service" />
+        <module name="ledger-service" />
+        <module name="payment-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="billing-service" target="21" />
+      <module name="order-service" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="order-service" options="-parameters" />
+      <module name="billing-service" options="" />
+      <module name="ledger-service" options="-parameters" />
+      <module name="order-service" options="" />
+      <module name="payment-service" options="-parameters" />
     </option>
   </component>
 </project>

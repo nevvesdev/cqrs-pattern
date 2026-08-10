@@ -1,0 +1,2 @@
+CREATE DATABASE payment_db;
+CREATE DATABASE ledger_db;
