@@ -16,16 +16,14 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_INITDB_ARGS: "-c max_connections=200"
+          POSTGRES_DB: cqrs_db
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-timeout 10s
+          --health-retries 10
         ports:
           - 5432:5432
-        volumes:
-          - /tmp/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
       zookeeper:
         image: confluentinc/cp-zookeeper:7.6.0
@@ -44,10 +42,9 @@ jobs:
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
           KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
         options: >-
-          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
           --health-interval 15s
-          --health-timeout 10s
-          --health-retries 5
+          --health-timeout 15s
+          --health-retries 10
         ports:
           - 9092:9092
 
@@ -62,21 +59,40 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -U postgres; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          echo "PostgreSQL failed to start"
+          exit 1
+        env:
+          PGPASSWORD: postgres
+
+      - name: Wait for Kafka to be ready
+        run: |
+          for i in {1..30}; do
+            if timeout 5 bash -c "echo '' | nc -z localhost 9092"; then
+              echo "Kafka is ready"
+              exit 0
+            fi
+            echo "Waiting for Kafka... ($i/30)"
+            sleep 2
+          done
+          echo "Kafka failed to start"
+          exit 1
 
       - name: Build with Maven
         run: mvn clean package -DskipTests -B
 
-      - name: Initialize databases
-        env:
-          PGPASSWORD: postgres
-        run: |
-          psql -h localhost -U postgres -c "CREATE DATABASE payment_db;"
-          psql -h localhost -U postgres -c "CREATE DATABASE ledger_db;"
-
       - name: Run tests
         env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cqrs_db
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
