@@ -30,6 +30,11 @@ jobs:
         env:
           ZOOKEEPER_CLIENT_PORT: 2181
           ZOOKEEPER_TICK_TIME: 2000
+        options: >-
+          --health-cmd "echo dump | nc localhost 2181"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
       kafka:
         image: confluentinc/cp-kafka:7.6.0
@@ -44,6 +49,9 @@ jobs:
         options: >-
           --health-interval 15s
           --health-timeout 15s
+          --health-cmd "nc -z localhost 9092"
+          --health-interval 10s
+          --health-timeout 5s
           --health-retries 10
         ports:
           - 9092:9092
