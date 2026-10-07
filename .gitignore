@@ -3,8 +3,11 @@ target/
 *.jar
 *.war
 .idea/
-.idea
 *.iml
 .DS_Store
 *.log
 .env
+.env.local
+build/
+*.swp
+*.swo
